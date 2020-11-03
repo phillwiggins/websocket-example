@@ -1,23 +1,33 @@
 package com.purewowstudio.network
 
+import com.purewowstudio.network.ConnectionManagerImpl.Companion.CLOSE_NORMAL
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.StateFlow
 import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.WebSocket
 
-class ConnectionManager {
+interface ConnectionManager<T> {
 
-    private val client = OkHttpClient()
-    private var webSocket: WebSocket? = null
+    suspend fun start(): StateFlow<SocketEvent<T>>
+    suspend fun close(code: Int? = CLOSE_NORMAL, reason: String? = "")
 
-    private fun start() {
-        val request: Request = Request.Builder().url(URL).build()
-        val listener = ConnectionListener()
-        webSocket = client.newWebSocket(request, listener)
-        client.dispatcher.executorService.shutdown()
+    data class Builder<T>(
+            private var client: OkHttpClient = OkHttpClient(),
+            private var dispatcher: CoroutineDispatcher = Dispatchers.IO
+    ) {
+        fun client(client: OkHttpClient) = apply { this.client = client }
+
+        fun dispatcher(dispatcher: CoroutineDispatcher) = apply { this.dispatcher = dispatcher }
+
+        fun build(url: String): ConnectionManager<T> =
+                ConnectionManagerImpl<T>(
+                        client = client,
+                        dispatcher = dispatcher,
+                        url = url
+                )
     }
 
-    companion object {
-        private const val PUBLIC_KEY = "GKY7SHF80BVZCL95K5SC"
-        private const val URL = "wss://stream.cryptowat.ch/connect?apikey=$PUBLIC_KEY"
-    }
+    suspend fun send(text: String)
+    suspend fun subscribe(clazz: Class<T>, subscibe: Subscribe)
+    suspend fun subscribe(subscibe: Subscribe)
 }
