@@ -28,6 +28,6 @@ interface ConnectionManager<T> {
     }
 
     suspend fun send(text: String)
-    suspend fun subscribe(clazz: Class<T>, subscibe: Subscribe)
-    suspend fun subscribe(subscibe: Subscribe)
+    suspend fun subscribe(clazz: Class<T>, subscibe: SubscriptionType)
+    suspend fun <S> subscribe(subscriptionType: S)
 }

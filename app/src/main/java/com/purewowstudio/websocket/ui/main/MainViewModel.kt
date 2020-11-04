@@ -6,6 +6,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.purewowstudio.network.ConnectionManager
 import com.purewowstudio.network.SocketEvent
+import com.purewowstudio.websocket.ui.entities.StreamSubscription
+import com.purewowstudio.websocket.ui.entities.Subscribe
+import com.purewowstudio.websocket.ui.entities.SubscribeRQ
+import com.purewowstudio.websocket.ui.entities.Subscription
 import com.purewowstudio.websocket.ui.main.MessageView.Event.Close
 import com.purewowstudio.websocket.ui.main.MessageView.Event.Open
 import com.purewowstudio.websocket.ui.main.MessageView.State
@@ -30,16 +34,21 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    private fun openStream() = viewModelScope.launch {
-        connectionManager = ConnectionManager.Builder<String>().build(URL)
-        connectionManager?.start()?.collect {
-            when (it) {
-                SocketEvent.Loading -> handleLoading()
-                is SocketEvent.Closed -> handleClosed()
-                is SocketEvent.Closing -> addMessage(text = "Closing")
-                is SocketEvent.Error -> addMessage(text = it.throwable.message.toString())
-                is SocketEvent.Message -> addMessage(text = it.text)
+    private fun openStream() {
+        viewModelScope.launch {
+            connectionManager = ConnectionManager.Builder<String>().build(URL)
+            connectionManager?.start()?.collect {
+                when (it) {
+                    SocketEvent.Loading -> handleLoading()
+                    is SocketEvent.Closed -> handleClosed()
+                    is SocketEvent.Closing -> addMessage(text = "Closing")
+                    is SocketEvent.Error -> addMessage(text = it.throwable.message.toString())
+                    is SocketEvent.Message -> addMessage(text = it.text)
+                }
             }
+        }
+        viewModelScope.launch {
+            connectionManager?.subscribe(createSubscription())
         }
     }
 
@@ -57,10 +66,10 @@ class MainViewModel : ViewModel() {
         val currentMessages = currentState.messages.toMutableList()
         currentMessages.add(text)
         updateViewState(
-            currentState.copy(
-                isLoading = true,
-                messages = currentMessages
-            )
+                currentState.copy(
+                        isLoading = true,
+                        messages = currentMessages
+                )
         )
     }
 
@@ -71,6 +80,9 @@ class MainViewModel : ViewModel() {
     private fun updateViewState(viewState: State) {
         _viewState.value = viewState
     }
+
+    private fun createSubscription(): SubscribeRQ =
+            SubscribeRQ(Subscribe(listOf(Subscription(StreamSubscription(resource = "markets:68:ohlc")))))
 
     private val currentState get() = _viewState.value!!
 

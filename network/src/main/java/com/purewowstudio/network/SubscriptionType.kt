@@ -1,3 +1,3 @@
 package com.purewowstudio.network
 
-interface Subscribe
+interface SubscriptionType

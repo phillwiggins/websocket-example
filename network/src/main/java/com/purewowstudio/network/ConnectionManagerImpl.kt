@@ -1,6 +1,7 @@
 package com.purewowstudio.network
 
 import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types
 import com.squareup.moshi.adapter
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.CoroutineDispatcher
@@ -32,9 +33,11 @@ internal class ConnectionManagerImpl<T>(
         return@withContext eventStream.asStateFlow()
     }
 
-    override suspend fun subscribe(subscibe: Subscribe) {
-        val adapter = moshi.adapter(Subscribe::class.java)
-        webSocket?.send(adapter.toJson(subscibe))
+    @ExperimentalStdlibApi
+    override suspend fun <S> subscribe(subscriptionType: S) {
+        val adapter = moshi.adapter<S>(Object::class.java)
+        val request = adapter.toJson(subscriptionType)
+        webSocket?.send(request)
     }
 
     override suspend fun send(text: String) {
@@ -66,7 +69,7 @@ internal class ConnectionManagerImpl<T>(
         const val CLOSE_DATA_ERROR = 1003
     }
 
-    override suspend fun subscribe(clazz: Class<T>, subscibe: Subscribe) {
+    override suspend fun subscribe(clazz: Class<T>, subscibe: SubscriptionType) {
         TODO("Not yet implemented")
     }
 }
