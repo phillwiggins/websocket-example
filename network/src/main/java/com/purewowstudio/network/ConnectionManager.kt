@@ -4,6 +4,7 @@ import com.purewowstudio.network.ConnectionManagerImpl.Companion.CLOSE_NORMAL
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.serialization.Serializable
 import okhttp3.OkHttpClient
 
 interface ConnectionManager<T> {
@@ -28,6 +29,5 @@ interface ConnectionManager<T> {
     }
 
     suspend fun send(text: String)
-    suspend fun subscribe(clazz: Class<T>, subscibe: SubscriptionType)
-    suspend fun <S> subscribe(subscriptionType: S)
+    suspend fun <S> subscribe(subscription: SubscribeRQ<S>)
 }

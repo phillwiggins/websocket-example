@@ -8,7 +8,7 @@ import com.purewowstudio.network.ConnectionManager
 import com.purewowstudio.network.SocketEvent
 import com.purewowstudio.websocket.ui.entities.StreamSubscription
 import com.purewowstudio.websocket.ui.entities.Subscribe
-import com.purewowstudio.websocket.ui.entities.SubscribeRQ
+import com.purewowstudio.network.SubscribeRQ
 import com.purewowstudio.websocket.ui.entities.Subscription
 import com.purewowstudio.websocket.ui.main.MessageView.Event.Close
 import com.purewowstudio.websocket.ui.main.MessageView.Event.Open
@@ -81,7 +81,7 @@ class MainViewModel : ViewModel() {
         _viewState.value = viewState
     }
 
-    private fun createSubscription(): SubscribeRQ =
+    private fun createSubscription(): SubscribeRQ<Subscribe> =
             SubscribeRQ(Subscribe(listOf(Subscription(StreamSubscription(resource = "markets:68:ohlc")))))
 
     private val currentState get() = _viewState.value!!

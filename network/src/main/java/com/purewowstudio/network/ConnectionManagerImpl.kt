@@ -1,14 +1,13 @@
 package com.purewowstudio.network
 
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.Types
-import com.squareup.moshi.adapter
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.WebSocket
@@ -19,9 +18,6 @@ internal class ConnectionManagerImpl<T>(
     private val url: String
 ) : ConnectionManager<T> {
 
-    private val moshi = Moshi.Builder()
-        .addLast(KotlinJsonAdapterFactory())
-        .build()
     private var webSocket: WebSocket? = null
     private val eventStream = MutableStateFlow<SocketEvent<T>>(SocketEvent.Loading)
 
@@ -33,11 +29,9 @@ internal class ConnectionManagerImpl<T>(
         return@withContext eventStream.asStateFlow()
     }
 
-    @ExperimentalStdlibApi
-    override suspend fun <S> subscribe(subscriptionType: S) {
-        val adapter = moshi.adapter<S>(Object::class.java)
-        val request = adapter.toJson(subscriptionType)
-        webSocket?.send(request)
+    override suspend fun <S> subscribe(subscription: SubscribeRQ<S>) {
+        val sub = Json.encodeToString(subscription)
+        webSocket?.send(sub)
     }
 
     override suspend fun send(text: String) {
@@ -69,7 +63,4 @@ internal class ConnectionManagerImpl<T>(
         const val CLOSE_DATA_ERROR = 1003
     }
 
-    override suspend fun subscribe(clazz: Class<T>, subscibe: SubscriptionType) {
-        TODO("Not yet implemented")
-    }
 }

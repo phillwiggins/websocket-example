@@ -1,13 +1,9 @@
 package com.purewowstudio.network
 
-import android.util.Log
 import com.purewowstudio.network.SocketEvent.Closed
 import com.purewowstudio.network.SocketEvent.Closing
 import com.purewowstudio.network.SocketEvent.Error
 import com.purewowstudio.network.SocketEvent.Message
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.launch
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
@@ -48,6 +44,5 @@ internal class ConnectionListener<T>(
 
     private fun postEvent(event: SocketEvent<T>) {
         eventListener(event)
-        Log.v("Message", event.toString())
     }
 }
